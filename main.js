@@ -29,78 +29,80 @@ const batch2 = [];
 
 //Check if credit card number is valid or not, return true for valid credit card
 function validateCred(creditCardNumber) {
-    const creditCardLengthEven = creditCardNumber.length % 2 === 0;
-    let doubledCreditNumber = [];
-    for (let i = creditCardNumber.length - 1; i >= 0; i--) {
-           if (creditCardLengthEven) {
-               if (i % 2 == 0) {
-                let doubledSingleNumber = creditCardNumber[i]*2;
-                let doubledSingleNumberToAdd = doubledSingleNumber > 9 ? doubledSingleNumber - 9 : doubledSingleNumber;
-                doubledCreditNumber.unshift(doubledSingleNumberToAdd);
-               } else {
-               doubledCreditNumber.unshift(creditCardNumber[i]);
-            }
-        } else if (i % 2 !== 0) {
-               let doubledSingleNumber = creditCardNumber[i]*2;
-               let doubledSingleNumberToAdd = doubledSingleNumber > 9 ? doubledSingleNumber - 9 : doubledSingleNumber;
-               doubledCreditNumber.unshift(doubledSingleNumberToAdd);
-           } else {
-            doubledCreditNumber.unshift(creditCardNumber[i]);
-        }
-    }     
-    let sumCreditNumber = doubledCreditNumber.reduce((acc, val) => acc + val, 0);
-    let validCreditCard = sumCreditNumber % 10 === 0;
-    return validCreditCard;
+    let sumCreditNumber = 0;
+    //loop through the numbers we don't need to modify
+    for (let i = creditCardNumber.length -1; i >= 0 ; i -= 2) {
+        sumCreditNumber += Number(creditCardNumber[i]);
+    }
+    //loop through the numbers we need to modify
+    for (let i = creditCardNumber.length -2; i >= 0 ; i -= 2) {
+        let doubleNumber = creditCardNumber[i]*2;
+        let doubledNumberToAdd = doubleNumber > 9 ? doubleNumber - 9 : doubleNumber;
+        sumCreditNumber += Number(doubledNumberToAdd);
+    }
+    //final validation for credit card number
+    return sumCreditNumber % 10 === 0;
 }
-
 
 //find all invalid cards from one nested array, return a new array of invalid cards
 function findInvalidCards(creditCardBatch) {
-    const invalidCreditCardBatch = [];
-    creditCardBatch.forEach(creditCardNumber => {
-        if (!validateCred(creditCardNumber)) {
-            invalidCreditCardBatch.push(creditCardNumber);
-        }
-    })
-   return invalidCreditCardBatch;
+    return creditCardBatch.filter(cc => !validateCred(cc));
+    
 }
 
 //Identify credit card company with invalid cards
-function idInvalidCardCompanies() {
-    let invalidCreditCards = findInvalidCards(batch);
-    console.log(invalidCreditCards);
-    let numberOfInvalidCreditCards = invalidCreditCards.length;
-    let fistCreditCardNumberValue = [];
-    for (let i = numberOfInvalidCreditCards -1; i >= 0; i--) {
-        fistCreditCardNumberValue.push(invalidCreditCards[i][0]); 
-    }
-    let uniquitefirstCreditCardNumberValue = new Set (fistCreditCardNumberValue);
-    let creditCardCompanieswithInvalidCards = [];
-    uniquitefirstCreditCardNumberValue.forEach(numberValue => {
-        switch (true) {
-            case numberValue === 3:
-                creditCardCompanieswithInvalidCards.push(' Amex');
+function idInvalidCardCompanies(testBatch) {
+    let invalidCreditCards = findInvalidCards(testBatch);
+    let fistCreditCardNumberValue = new Set (invalidCreditCards.map(function(x) {
+        return x[0];
+    }))
+    let invalidCreditCardCompanies = [];
+    fistCreditCardNumberValue.forEach(numberValue => {
+        switch (numberValue) {
+            case 3:
+                invalidCreditCardCompanies.push(' Amex');
                 break;
-            case numberValue === 4:
-                creditCardCompanieswithInvalidCards.push(' Visa');
+            case 4:
+                invalidCreditCardCompanies.push(' Visa');
                 break;
-            case numberValue === 5:
-                creditCardCompanieswithInvalidCards.push(' MasterCard');
+            case 5:
+                invalidCreditCardCompanies.push(' MasterCard');
                 break;
-            case numberValue === 6:
-                creditCardCompanieswithInvalidCards.push(' Discover');
+            case 6:
+                invalidCreditCardCompanies.push(' Discover');
                 break;
             default:
-                creditCardCompanieswithInvalidCards.push('Company not found');
+                invalidCreditCardCompanies.push('Company not found');
         }
     })
-    return console.log(`Credit card companies with invalid credit card numbers: ${creditCardCompanieswithInvalidCards}`)
+    return console.log(`Credit card companies with invalid credit card numbers: ${invalidCreditCardCompanies}`)
 };
 
-//function accept string and convert to array
+//convert a string into an array of numbers
 function convertStringtoArray(creditCardstring){
-    let newCreditCardInput = creditCardstring;
-    let newCreditCardArray = newCreditCardInput.split("").map((newCreditCardInput)=>{
-        return Number(newCreditCardInput)});
-    return batch2.push(newCreditCardArray);
+    let newCreditCardArray = creditCardstring.split("").map(x=>+x);
+    batch2.push(newCreditCardArray);
+    return newCreditCardArray
 }
+
+
+//TEST SECTION
+
+//test for validating cards
+console.log(validateCred(valid1)); //should print true
+console.log(validateCred(invalid1)); //should print false
+
+//test for creating array with invalid cards
+const oneCreditCardValid = [invalid1,invalid2,invalid3,invalid4,invalid4,valid1] // has only one valid card
+console.log(findInvalidCards(oneCreditCardValid)); //should log 5 invalid cards
+
+//test for id invalid credit card companies
+idInvalidCardCompanies(oneCreditCardValid); // should return Visa, MasterCard, Amex, Discover
+
+//test for string conversion
+console.log(validateCred(convertStringtoArray('4024007117529221'))); //should print true
+console.log(batch2); // should print the new array
+
+console.log(validateCred(convertStringtoArray('4024007117529229'))); // should print true and false
+console.log(batch2); // should print the new array with 2 credit card numbers
+console.log(findInvalidCards(batch2)); // should print one false credit card number

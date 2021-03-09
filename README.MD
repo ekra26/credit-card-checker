@@ -7,3 +7,7 @@ The company that you work for suspects that credit card distributors have been m
 ### Technologies
 
 JavaScript
+
+#### Comments
+
+Uses Luhn algorithm
